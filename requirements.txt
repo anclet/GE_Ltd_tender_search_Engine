@@ -1,0 +1,8 @@
+gradio
+pandas
+requests
+beautifulsoup4
+nltk
+scikit-learn
+numpy
+selenium
