@@ -3,6 +3,7 @@
 import gradio as gr
 import pandas as pd
 import requests
+import os
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 import re
@@ -1134,5 +1135,6 @@ def create_interface():
 # ============================================================================
 
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080))
     demo = create_interface()
-    demo.launch()
+    demo.launch(server_name="0.0.0.0", server_port=port, share=False)
