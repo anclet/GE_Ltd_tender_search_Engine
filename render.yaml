@@ -1,15 +1,27 @@
+# services:
+#   - type: web
+#     name: ge-tender-scraper
+#     env: docker
+#     region: oregon # or your preferred region
+#     plan: free # or standard/pro based on your needs
+#     dockerfilePath: ./Dockerfile
+#     dockerContext: .
+#     envVars:
+#       - key: PORT
+#         value: 8080
+#       - key: PYTHONUNBUFFERED
+#         value: 1
+#     healthCheckPath: /
+#     autoDeploy: true
+
 services:
   - type: web
     name: ge-tender-scraper
-    env: docker
-    region: oregon # or your preferred region
-    plan: starter # or standard/pro based on your needs
-    dockerfilePath: ./Dockerfile
-    dockerContext: .
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
     envVars:
-      - key: PORT
-        value: 8080
-      - key: PYTHONUNBUFFERED
-        value: 1
-    healthCheckPath: /
-    autoDeploy: true
+      - key: PYTHON_VERSION
+        value: 3.11.9
