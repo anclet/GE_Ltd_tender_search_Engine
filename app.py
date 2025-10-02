@@ -19,16 +19,30 @@ from nltk.tokenize import word_tokenize
 import warnings
 warnings.filterwarnings('ignore')
 
-# Optional Selenium imports
+# # Optional Selenium imports
+# try:
+#     from selenium import webdriver
+#     from selenium.webdriver.common.by import By
+#     from selenium.webdriver.support.ui import WebDriverWait
+#     from selenium.webdriver.support import expected_conditions as EC
+#     from selenium.common.exceptions import TimeoutException, NoSuchElementException
+#     SELENIUM_AVAILABLE = True
+# except ImportError:
+#     SELENIUM_AVAILABLE = False
+
+# Optional Selenium imports with better error handling
+SELENIUM_AVAILABLE = False
 try:
     from selenium import webdriver
     from selenium.webdriver.common.by import By
     from selenium.webdriver.support.ui import WebDriverWait
     from selenium.webdriver.support import expected_conditions as EC
     from selenium.common.exceptions import TimeoutException, NoSuchElementException
+    from selenium.webdriver.chrome.service import Service
     SELENIUM_AVAILABLE = True
-except ImportError:
-    SELENIUM_AVAILABLE = False
+    print("✓ Selenium available")
+except ImportError as e:
+    print(f"✗ Selenium not available: {e}")
 
 # Download NLTK data if not already present
 try:
