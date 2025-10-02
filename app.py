@@ -820,44 +820,120 @@ search_engine = TenderSearchEngine()
 # GRADIO INTERFACE FUNCTIONS
 # ============================================================================
 
+# def perform_combined_scraping(include_umucyo, progress=gr.Progress()):
+#     """
+#     Scrapes using both methods and merges the results
+#     """
+#     progress(0.1, desc="Starting BeautifulSoup scraping...")
+
+#     # Method 1: BeautifulSoup scraping
+#     websites = [
+#         "https://www.jobinrwanda.com/jobs/consultancy",
+#         "https://www.jobinrwanda.com/jobs/tender",
+#         "https://www.jobinrwanda.com/jobs/all",
+#         "https://www.rwandatenders.com/tenders.php"
+#     ]
+
+#     try:
+#         start_time = time.time()
+#         method1_df = scrape_multiple_urls_parallel(websites, max_workers=3)
+#         progress(0.5, desc=f"Method 1 complete: {len(method1_df)} tenders found")
+
+#         # Method 2: Umucyo Selenium scraping (optional)
+#         method2_data = []
+#         if include_umucyo and SELENIUM_AVAILABLE:
+#             progress(0.6, desc="Starting Umucyo scraping (may take longer)...")
+#             try:
+#                 umucyo_scraper = UmucyoTendersScraper(headless=True)
+#                 method2_data = umucyo_scraper.scrape(max_pages=1)
+#                 progress(0.85, desc=f"Method 2 complete: {len(method2_data)} tenders found")
+#             except Exception as e:
+#                 print(f"Umucyo scraping error: {e}")
+#         elif include_umucyo and not SELENIUM_AVAILABLE:
+#             print("Selenium not available - skipping Umucyo")
+
+#         progress(0.9, desc="Merging data from all sources...")
+
+#         # MERGE THE TWO METHODS
+#         final_df = merge_scraped_data(method1_df, method2_data)
+
+#         # Load into search engine
+#         search_engine.load_data(final_df)
+
+#         execution_time = time.time() - start_time
+
+#         if final_df.empty:
+#             return "No tenders found. Please check the websites.", pd.DataFrame(), {}
+
+#         # Generate summary
+#         stats = search_engine.get_statistics()
+#         summary = f"""
+# ✅ **Scraping Completed Successfully!**
+
+# **Summary:**
+# - Total Tenders Found: {stats['total_tenders']}
+# - Tenders with Deadlines: {stats['with_deadlines']}
+# - Execution Time: {execution_time:.2f} seconds
+
+# **Sources:**
+# """
+#         for source, count in stats.get('sources', {}).items():
+#             summary += f"\n- {source}: {count} tenders"
+
+#         summary += "\n\n**Categories Found:**"
+#         for category, count in stats['categories'].items():
+#             summary += f"\n- {category}: {count}"
+
+#         summary += "\n\n**Use the search panel to find specific tenders**"
+
+#         progress(1.0, desc="Complete!")
+
+#         return summary, create_display_dataframe(final_df), final_df.to_dict('records')
+
+#     except Exception as e:
+#         return f"❌ Error during scraping: {str(e)}", pd.DataFrame(), {}
+
+
+
+#########################################################################
 def perform_combined_scraping(include_umucyo, progress=gr.Progress()):
     """
-    Scrapes using both methods and merges the results
+    Scrapes using both methods and merges the results.
+    Order: Umucyo (Selenium) first → JobInRwanda/others (BeautifulSoup) second.
     """
-    progress(0.1, desc="Starting BeautifulSoup scraping...")
-
-    # Method 1: BeautifulSoup scraping
-    websites = [
-        "https://www.jobinrwanda.com/jobs/consultancy",
-        "https://www.jobinrwanda.com/jobs/tender",
-        "https://www.jobinrwanda.com/jobs/all",
-        "https://www.rwandatenders.com/tenders.php"
-    ]
-
     try:
         start_time = time.time()
-        method1_df = scrape_multiple_urls_parallel(websites, max_workers=3)
-        progress(0.5, desc=f"Method 1 complete: {len(method1_df)} tenders found")
+        all_data = []
 
-        # Method 2: Umucyo Selenium scraping (optional)
+        # === STEP 1: Scrape Umucyo FIRST (if requested) ===
         method2_data = []
         if include_umucyo and SELENIUM_AVAILABLE:
-            progress(0.6, desc="Starting Umucyo scraping (may take longer)...")
+            progress(0.1, desc="Starting Umucyo scraping (may take 1-2 minutes)...")
             try:
                 umucyo_scraper = UmucyoTendersScraper(headless=True)
-                method2_data = umucyo_scraper.scrape(max_pages=5)
-                progress(0.85, desc=f"Method 2 complete: {len(method2_data)} tenders found")
+                method2_data = umucyo_scraper.scrape(max_pages=1)
+                progress(0.4, desc=f"Umucyo scraping complete: {len(method2_data)} tenders found")
             except Exception as e:
                 print(f"Umucyo scraping error: {e}")
+                progress(0.4, desc="Umucyo scraping failed – continuing with other sources...")
         elif include_umucyo and not SELENIUM_AVAILABLE:
-            print("Selenium not available - skipping Umucyo")
+            print("Selenium not available – skipping Umucyo")
+            progress(0.1, desc="Selenium not available – skipping Umucyo")
 
+        # === STEP 2: Scrape JobInRwanda and others SECOND ===
+        progress(0.45, desc="Starting BeautifulSoup scraping (JobInRwanda, RwandaTenders)...")
+        websites = [
+            "https://www.jobinrwanda.com/jobs/consultancy",
+            "https://www.jobinrwanda.com/jobs/tender",
+            "https://www.jobinrwanda.com/jobs/all",
+            "https://www.rwandatenders.com/tenders.php"
+        ]
+        method1_df = scrape_multiple_urls_parallel(websites, max_workers=3)
+        progress(0.8, desc=f"BeautifulSoup scraping complete: {len(method1_df)} tenders found")
+
+        # === STEP 3: Merge data ===
         progress(0.9, desc="Merging data from all sources...")
-
-        # MERGE THE TWO METHODS
         final_df = merge_scraped_data(method1_df, method2_data)
-
-        # Load into search engine
         search_engine.load_data(final_df)
 
         execution_time = time.time() - start_time
@@ -865,7 +941,7 @@ def perform_combined_scraping(include_umucyo, progress=gr.Progress()):
         if final_df.empty:
             return "No tenders found. Please check the websites.", pd.DataFrame(), {}
 
-        # Generate summary
+        # === Generate summary ===
         stats = search_engine.get_statistics()
         summary = f"""
 ✅ **Scraping Completed Successfully!**
@@ -880,12 +956,12 @@ def perform_combined_scraping(include_umucyo, progress=gr.Progress()):
         for source, count in stats.get('sources', {}).items():
             summary += f"\n- {source}: {count} tenders"
 
-        summary += "\n\n**Categories Found:**"
-        for category, count in stats['categories'].items():
+        summary += "\n\n**Top Categories Found:**"
+        top_categories = sorted(stats['categories'].items(), key=lambda x: x[1], reverse=True)[:8]
+        for category, count in top_categories:
             summary += f"\n- {category}: {count}"
 
         summary += "\n\n**Use the search panel to find specific tenders**"
-
         progress(1.0, desc="Complete!")
 
         return summary, create_display_dataframe(final_df), final_df.to_dict('records')
