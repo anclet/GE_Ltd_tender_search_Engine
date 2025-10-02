@@ -27,3 +27,4 @@ nltk==3.8.0
 
 # Additional utilities
 python-dateutil==2.8.2
+pyaudioop-lts>=3.11.0 
