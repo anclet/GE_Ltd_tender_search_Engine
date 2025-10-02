@@ -2119,9 +2119,9 @@ def create_interface():
             scrape_btn = gr.Button("🚀 Start Scraping", variant="primary", size="lg")
             scraping_status = gr.Textbox(label="Scraping Status", lines=12, interactive=False)
             scraped_display = gr.Dataframe(
-                label="Scraped Tenders Preview (First 100)",
+                label="Scraped Tenders Preview",
                 interactive=False,
-                max_rows=100
+                #max_rows=100
             )
 
             scrape_btn.click(
@@ -2164,7 +2164,7 @@ def create_interface():
             search_results_table = gr.Dataframe(
                 label="Matching Tenders",
                 interactive=False,
-                max_rows=50
+                #max_rows=50
             )
 
             search_btn.click(
