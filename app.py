@@ -1992,7 +1992,7 @@ def perform_combined_scraping(include_umucyo, progress=gr.Progress()):
             progress(0.6, desc="Starting Umucyo scraping (this may take 2-3 minutes)...")
             try:
                 umucyo_scraper = UmucyoTendersScraper(headless=True)
-                method2_data = umucyo_scraper.scrape(max_pages=3)
+                method2_data = umucyo_scraper.scrape(max_pages=1)
                 progress(0.85, desc=f"Method 2 complete: {len(method2_data)} tenders found")
             except Exception as e:
                 print(f"Umucyo scraping error: {e}")

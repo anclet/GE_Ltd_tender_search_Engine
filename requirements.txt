@@ -7,23 +7,14 @@
 # numpy
 # selenium
 
-
-# Core dependencies
-gradio>=4.16.0,<5.0.0
+gradio
 pandas
+requests
+beautifulsoup4
+lxml
+html5lib
+urllib3
 numpy
 scikit-learn
-# Web scraping
-requests==2.31.0
-beautifulsoup4==4.12.0
-lxml==5.1.0
-
-# Selenium (for Umucyo scraping)
-selenium==4.15.0
-
-# NLP and search
-scikit-learn==1.4.0
-nltk==3.8.0
-
-# Additional utilities
-python-dateutil==2.8.2
+nltk
+selenium
