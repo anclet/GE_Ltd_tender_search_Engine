@@ -1238,6 +1238,7 @@
 # Combined Tender Scraping System - Merging Two Approaches
 import gradio as gr
 import pandas as pd
+import os
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
