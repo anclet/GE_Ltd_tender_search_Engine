@@ -1386,270 +1386,11 @@ def generate_analytics(scraped_data):
 # GRADIO INTERFACE
 # ============================================================================
 
-# def create_interface():
-#     with gr.Blocks(title="Opportunity Search System", theme=gr.themes.Soft()) as demo:
-#         gr.Markdown("""
-#         #Combined Tender & Opportunity Search System
-                    
-#         This system merges multiple scraping methodologies:
-#         - **BeautifulSoup Scraping**: Fast scraping for JobInRwanda, RwandaTenders
-#         - **Selenium Scraping**: Advanced scraping for Umucyo Government Portal, World Bank Portal
-        
-#         **Choose your sources** and combine results into a single searchable database with advanced filtering.
-#         """)
-        
-#         scraped_data_state = gr.State([])
-        
-#         with gr.Tab("🔍 Scraping"):
-#             gr.Markdown("### Select Sources to Scrape")
-            
-#             gr.Markdown("#### Fast Sources (BeautifulSoup)")
-#             with gr.Row():
-#                 with gr.Column(scale=1):
-#                     include_jobinrwanda = gr.Checkbox(
-#                         label="JobInRwanda.com",
-#                         value=True,
-#                         interactive=True,
-#                         info="Local Rwandan jobs & tenders portal"
-#                     )
-#                 with gr.Column(scale=1):
-#                     include_rwandatenders = gr.Checkbox(
-#                         label="RwandaTenders.com",
-#                         value=True,
-#                         interactive=True,
-#                         info="Dedicated Rwandan tender platform"
-#                     )
-            
-#             gr.Markdown("#### Comprehensive Sources")
-#             with gr.Row():
-#                 with gr.Column(scale=1):
-#                     include_umucyo = gr.Checkbox(
-#                         label="Umucyo Government Portal",
-#                         value=SELENIUM_AVAILABLE,
-#                         interactive=SELENIUM_AVAILABLE,
-#                         info="Official Rwanda Government procurement portal"
-#                     )
-#                 with gr.Column(scale=1):
-#                     include_worldbank = gr.Checkbox(
-#                         label="World Bank Opportunities",
-#                         value=SELENIUM_AVAILABLE,
-#                         interactive=SELENIUM_AVAILABLE,
-#                         info="International development opportunities"
-#                     )
-            
-#             # World Bank Country Selection
-#             with gr.Row():
-#                 wb_country_dropdown = gr.Dropdown(
-#                     label="Select Country for World Bank Opportunities",
-#                     choices=sorted(WORLD_BANK_COUNTRIES.keys()),
-#                     value="Rwanda",
-#                     interactive=True,
-#                     info="Choose which country's opportunities to scrape from World Bank",
-#                     visible=True
-#                 )
-            
-#             if not SELENIUM_AVAILABLE:
-#                 gr.Markdown("*Selenium not installed - Umucyo and World Bank scrapers unavailable*")
-            
-#             gr.Markdown("---")
-            
-#             scrape_btn = gr.Button("Start Scraping Selected Sources", variant="primary", size="lg")
-#             scraping_status = gr.Textbox(label="Status", lines=12, interactive=False)
-#             scraped_display = gr.Dataframe(
-#                 label="Results Preview",
-#                 interactive=False,
-#                 datatype=["str", "str", "str", "str", "str", "str", "markdown"]
-#             )
-            
-#             scrape_btn.click(
-#                 fn=perform_combined_scraping,
-#                 inputs=[include_jobinrwanda, include_rwandatenders, include_umucyo, include_worldbank, wb_country_dropdown],
-#                 outputs=[scraping_status, scraped_display, scraped_data_state]
-#             )
-        
-#         with gr.Tab("Search"):
-#             gr.Markdown("### Smart Search Engine with Advanced Filters")
-            
-#             search_query = gr.Textbox(
-#                 label="Search Query",
-#                 placeholder="e.g., 'medical equipment', 'construction', 'IT services'...",
-#                 lines=1
-#             )
-            
-#             with gr.Row():
-#                 category_filter = gr.Dropdown(
-#                     label="Category Filter",
-#                     choices=["All"] + sorted(list(CATEGORY_KEYWORDS.keys())) + ["Other"],
-#                     value="All"
-#                 )
-#                 urgency_filter = gr.Dropdown(
-#                     label="Urgency Filter",
-#                     choices=["All", "Critical", "Urgent", "Medium", "Low", "Unknown", "Expired"],
-#                     value="All"
-#                 )
-            
-#             search_btn = gr.Button("Search", variant="primary")
-#             search_results_info = gr.Textbox(label="Search Results", lines=5, interactive=False)
-#             search_results_table = gr.Dataframe(
-#                 label="Matching Tenders",
-#                 interactive=False,
-#                 datatype=["str", "str", "str", "str", "str", "str", "markdown"]
-#             )
-            
-#             search_btn.click(
-#                 fn=search_tenders,
-#                 inputs=[search_query, category_filter, urgency_filter, scraped_data_state],
-#                 outputs=[search_results_info, search_results_table]
-#             )
-            
-#             search_query.submit(
-#                 fn=search_tenders,
-#                 inputs=[search_query, category_filter, urgency_filter, scraped_data_state],
-#                 outputs=[search_results_info, search_results_table]
-#             )
-        
-#         with gr.Tab("Analytics"):
-#             gr.Markdown("### Data Analytics & Insights")
-            
-#             analytics_btn = gr.Button("Generate Report", variant="secondary", size="lg")
-#             analytics_output = gr.Textbox(label="Analytics Report", lines=25, interactive=False)
-            
-#             analytics_btn.click(
-#                 fn=generate_analytics,
-#                 inputs=[scraped_data_state],
-#                 outputs=[analytics_output]
-#             )
-        
-#         with gr.Tab("Help"):
-#             gr.Markdown("""
-#             ## How This System Works
-            
-#             ### Data Sources
-            
-#             **Fast Sources (BeautifulSoup):**
-#             1. **JobInRwanda.com** - Local Rwandan job and tender portal (✓ Enabled by default)
-#             2. **RwandaTenders.com** - Dedicated tender platform (✓ Enabled by default)
-            
-#             **Comprehensive Sources (Selenium - Slower):**
-#             3. **Umucyo.gov.rw** - Official Rwanda Government procurement portal (Requires Selenium)
-#             4. **World Bank** - International development opportunities (Requires Selenium, Country selectable)
-            
-#             **Tip**: For fastest results, use only JobInRwanda and RwandaTenders. For comprehensive coverage, enable all sources.
-            
-#             ### Data Merging Process
-#             All data from different sources is:
-#             1. Standardized to common format (title, link, deadline)
-#             2. Combined into single unified database
-#             3. Deduplicated based on title and link
-#             4. Enhanced with source tracking and metadata
-#             5. Categorized automatically by sector
-#             6. Assigned urgency levels based on deadlines
-            
-#             ### Search Features
-#             - **Semantic Search**: Uses TF-IDF vectorization for intelligent matching
-#             - **Auto-Categorization**: Automatically detects tender categories
-#             - **Urgency Calculation**: Smart deadline-based priority levels
-#             - **Multiple Filters**: Filter by category, urgency, and keywords
-#             - **Source Tracking**: Know exactly where each opportunity came from
-#             - **Country Selection**: Choose specific countries for World Bank opportunities
-            
-#             ### World Bank Country Selection
-#             - Select any country from the dropdown to scrape World Bank opportunities
-#             - Default is set to Rwanda
-#             - Over 100 countries available
-#             - Each scraping session can target a different country
-            
-#             ### Performance Tips
-#             - Scraping may take 2-5 minutes depending on selected sources
-#             - **Expired tenders are automatically filtered during scraping** for faster performance
-#             - BeautifulSoup scrapers are faster (JobInRwanda, RwandaTenders)
-#             - Selenium scrapers are slower but more comprehensive (Umucyo, World Bank)
-#             - Results are cached for fast searching after initial scrape
-#             - Only active (non-expired) tenders are collected to optimize time complexity
-            
-#             ### Understanding Urgency Levels
-#             - **Critical**: ≤ 3 days remaining
-#             - **Urgent**: 4-7 days remaining
-#             - **Medium**: 8-14 days remaining
-#             - **Low**: > 14 days remaining
-#             - **Expired**: Deadline has passed
-#             - **Unknown**: No deadline specified
-            
-#             ### Tips for Best Results
-#             - Use specific keywords in search (e.g., "solar panels" vs "energy")
-#             - Combine category and urgency filters for targeted results
-#             - Check analytics tab for overview of available opportunities
-#             - Links open in new tab for easy access
-#             """)
-    
-#     return demo
-
-
-# JavaScript code to add basic protection
-PROTECTION_JS = """
-<script>
-// Disable right-click
-document.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
-    return false;
-}, false);
-
-// Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
-document.addEventListener('keydown', function(e) {
-    // F12
-    if (e.keyCode == 123) {
-        e.preventDefault();
-        return false;
-    }
-    // Ctrl+Shift+I
-    if (e.ctrlKey && e.shiftKey && e.keyCode == 73) {
-        e.preventDefault();
-        return false;
-    }
-    // Ctrl+Shift+J
-    if (e.ctrlKey && e.shiftKey && e.keyCode == 74) {
-        e.preventDefault();
-        return false;
-    }
-    // Ctrl+U (View Source)
-    if (e.ctrlKey && e.keyCode == 85) {
-        e.preventDefault();
-        return false;
-    }
-    // Ctrl+S (Save Page)
-    if (e.ctrlKey && e.keyCode == 83) {
-        e.preventDefault();
-        return false;
-    }
-}, false);
-
-// Detect DevTools opening (by checking window size changes)
-let devtools = {open: false};
-const threshold = 160;
-
-setInterval(function() {
-    if (window.outerWidth - window.innerWidth > threshold || 
-        window.outerHeight - window.innerHeight > threshold) {
-        if (!devtools.open) {
-            devtools.open = true;
-            document.body.innerHTML = '<h1 style="text-align:center;margin-top:50px;">Developer tools are not allowed on this page.</h1>';
-        }
-    }
-}, 500);
-
-// Disable console
-console.log = function() {};
-console.warn = function() {};
-console.error = function() {};
-</script>
-"""
-
 def create_interface():
-    with gr.Blocks(title="Opportunity Search System") as demo:
-        # Inject protection JavaScript using HTML component
-        gr.HTML(PROTECTION_JS)
+    with gr.Blocks(title="Opportunity Search System", theme=gr.themes.Soft()) as demo:
         gr.Markdown("""
-        # Combined Tender & Opportunity Search System
+        #Combined Tender & Opportunity Search System
+                    
         This system merges multiple scraping methodologies:
         - **BeautifulSoup Scraping**: Fast scraping for JobInRwanda, RwandaTenders
         - **Selenium Scraping**: Advanced scraping for Umucyo Government Portal, World Bank Portal
@@ -1661,8 +1402,8 @@ def create_interface():
         
         with gr.Tab("🔍 Scraping"):
             gr.Markdown("### Select Sources to Scrape")
-            gr.Markdown("#### Fast Sources (BeautifulSoup)")
             
+            gr.Markdown("#### Fast Sources (BeautifulSoup)")
             with gr.Row():
                 with gr.Column(scale=1):
                     include_jobinrwanda = gr.Checkbox(
@@ -1680,7 +1421,6 @@ def create_interface():
                     )
             
             gr.Markdown("#### Comprehensive Sources")
-            
             with gr.Row():
                 with gr.Column(scale=1):
                     include_umucyo = gr.Checkbox(
@@ -1723,12 +1463,11 @@ def create_interface():
             
             scrape_btn.click(
                 fn=perform_combined_scraping,
-                inputs=[include_jobinrwanda, include_rwandatenders, include_umucyo, 
-                        include_worldbank, wb_country_dropdown],
+                inputs=[include_jobinrwanda, include_rwandatenders, include_umucyo, include_worldbank, wb_country_dropdown],
                 outputs=[scraping_status, scraped_display, scraped_data_state]
             )
         
-        with gr.Tab("🔍 Search"):
+        with gr.Tab("Search"):
             gr.Markdown("### Smart Search Engine with Advanced Filters")
             
             search_query = gr.Textbox(
@@ -1769,8 +1508,9 @@ def create_interface():
                 outputs=[search_results_info, search_results_table]
             )
         
-        with gr.Tab("📊 Analytics"):
+        with gr.Tab("Analytics"):
             gr.Markdown("### Data Analytics & Insights")
+            
             analytics_btn = gr.Button("Generate Report", variant="secondary", size="lg")
             analytics_output = gr.Textbox(label="Analytics Report", lines=25, interactive=False)
             
@@ -1780,11 +1520,12 @@ def create_interface():
                 outputs=[analytics_output]
             )
         
-        with gr.Tab("❓ Help"):
+        with gr.Tab("Help"):
             gr.Markdown("""
             ## How This System Works
             
             ### Data Sources
+            
             **Fast Sources (BeautifulSoup):**
             1. **JobInRwanda.com** - Local Rwandan job and tender portal (✓ Enabled by default)
             2. **RwandaTenders.com** - Dedicated tender platform (✓ Enabled by default)
@@ -1842,6 +1583,8 @@ def create_interface():
             """)
     
     return demo
+
+
 
 
 
