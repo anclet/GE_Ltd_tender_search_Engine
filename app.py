@@ -1584,7 +1584,6 @@ def generate_analytics(scraped_data):
     
 #     return demo
 
-import gradio as gr
 
 # JavaScript code to add basic protection
 PROTECTION_JS = """
@@ -1646,10 +1645,9 @@ console.error = function() {};
 """
 
 def create_interface():
-    with gr.Blocks(
-        title="Opportunity Search System",
-        head=PROTECTION_JS  # Inject protection JavaScript
-    ) as demo:
+    with gr.Blocks(title="Opportunity Search System") as demo:
+        # Inject protection JavaScript using HTML component
+        gr.HTML(PROTECTION_JS)
         gr.Markdown("""
         # Combined Tender & Opportunity Search System
         This system merges multiple scraping methodologies:
