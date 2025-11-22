@@ -1584,6 +1584,8 @@ def generate_analytics(scraped_data):
     
 #     return demo
 
+import gradio as gr
+
 # JavaScript code to add basic protection
 PROTECTION_JS = """
 <script>
@@ -1645,8 +1647,7 @@ console.error = function() {};
 
 def create_interface():
     with gr.Blocks(
-        title="Opportunity Search System", 
-        theme=gr.themes.Soft(),
+        title="Opportunity Search System",
         head=PROTECTION_JS  # Inject protection JavaScript
     ) as demo:
         gr.Markdown("""
